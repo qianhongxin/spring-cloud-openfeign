@@ -92,6 +92,7 @@ public class FeignClientsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	// 增加SpringMVC的增强的契约支持。支持解析SpringMVC的声明注解处理。同时也支持原生的Feign的契约注解支持
 	public Contract feignContract(ConversionService feignConversionService) {
 		return new SpringMvcContract(this.parameterProcessors, feignConversionService);
 	}

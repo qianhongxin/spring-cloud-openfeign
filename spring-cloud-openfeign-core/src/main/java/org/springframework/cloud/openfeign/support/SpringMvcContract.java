@@ -69,6 +69,8 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Aram Peres
  * @author Olga Maciaszek-Sharma
  */
+// 解析 SpringMVC 的注解契约
+// 该契约继承了原生的Feign的Contract
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
 

@@ -216,6 +216,7 @@ class FeignClientFactoryBean
 		}
 	}
 
+	// 这里拿到我们注册的契约，即FeignClientsConfiguration中的feignContract
 	protected <T> T get(FeignContext context, Class<T> type) {
 		T instance = context.getInstance(this.contextId, type);
 		if (instance == null) {
