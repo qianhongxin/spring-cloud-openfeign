@@ -85,7 +85,9 @@ class FeignClientFactoryBean
 		Logger logger = loggerFactory.create(this.type);
 
 		// @formatter:off
-		Feign.Builder builder = get(context, Feign.Builder.class)
+		Feign.Builder builder =
+			// 拿到的是FeignClientsConfiguration中配置的HystrixFeign.Builder
+			get(context, Feign.Builder.class)
 				// required values
 				.logger(logger)
 				.encoder(get(context, Encoder.class))
@@ -216,7 +218,6 @@ class FeignClientFactoryBean
 		}
 	}
 
-	// 这里拿到我们注册的契约，即FeignClientsConfiguration中的feignContract
 	protected <T> T get(FeignContext context, Class<T> type) {
 		T instance = context.getInstance(this.contextId, type);
 		if (instance == null) {
@@ -232,7 +233,10 @@ class FeignClientFactoryBean
 
 	protected <T> T loadBalance(Feign.Builder builder, FeignContext context,
 			HardCodedTarget<T> target) {
+		// 默认拿到的是DefaultFeignLoadBalancedConfiguration中配置的feignClient
+		// 和Ribbon有关的
 		Client client = getOptional(context, Client.class);
+
 		if (client != null) {
 			builder.client(client);
 			Targeter targeter = get(context, Targeter.class);
@@ -253,18 +257,25 @@ class FeignClientFactoryBean
 	 * @return a {@link Feign} client created with the specified data and the context
 	 * information
 	 */
+	// 获取@FeignClient标注的接口的代理对象
 	<T> T getTarget() {
+		// FeignContext是Feign在Spring中的子容器
 		FeignContext context = this.applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
 
+		// 如果我们在@FeignClient中没有配置url，走这个逻辑
 		if (!StringUtils.hasText(this.url)) {
+			// 将name处理下赋值给url
 			if (!this.name.startsWith("http")) {
 				this.url = "http://" + this.name;
 			}
 			else {
 				this.url = this.name;
 			}
+			// 格式化url
 			this.url += cleanPath();
+
+			// 走负载均衡的动态代理的target
 			return (T) loadBalance(builder, context,
 					new HardCodedTarget<>(this.type, this.name, this.url));
 		}

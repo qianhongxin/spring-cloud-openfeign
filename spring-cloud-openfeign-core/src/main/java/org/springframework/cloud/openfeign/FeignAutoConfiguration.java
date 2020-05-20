@@ -77,6 +77,7 @@ public class FeignAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
+	// feign和hystrix组合的。实现feign的限流熔断降级功能
 	protected static class HystrixFeignTargeterConfiguration {
 
 		@Bean

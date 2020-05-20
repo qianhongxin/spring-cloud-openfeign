@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * @author Venil Noronha
  * @author Gang Li
  */
+// 在EnableFeignClients注解中被加载执行
 class FeignClientsRegistrar
 		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
@@ -229,6 +230,7 @@ class FeignClientsRegistrar
 	private void registerFeignClient(BeanDefinitionRegistry registry,
 			AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
+		// 将构建FeignClient的工厂FeignClientFactoryBean设置进去
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientFactoryBean.class);
 		validate(attributes);
