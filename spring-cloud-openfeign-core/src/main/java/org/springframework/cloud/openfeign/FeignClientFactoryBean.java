@@ -279,6 +279,7 @@ class FeignClientFactoryBean
 			return (T) loadBalance(builder, context,
 					new HardCodedTarget<>(this.type, this.name, this.url));
 		}
+		// 给url拼接http://头
 		if (StringUtils.hasText(this.url) && !this.url.startsWith("http")) {
 			this.url = "http://" + this.url;
 		}

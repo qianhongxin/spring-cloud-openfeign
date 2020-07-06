@@ -235,6 +235,7 @@ class FeignClientsRegistrar
 		String className = annotationMetadata.getClassName();
 		// 将构建FeignClient的工厂FeignClientFactoryBean设置进去
 		// 调用spring的api，代码创建BeanDefinition，并设置到BeanDefinition池子中
+		// FeignClientFactoryBean用于后面根据propertyValue创建FeignClient
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientFactoryBean.class);
 		validate(attributes);
