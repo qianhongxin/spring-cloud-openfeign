@@ -141,9 +141,9 @@ class FeignClientsRegistrar
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata metadata,
 			BeanDefinitionRegistry registry) {
-		// 处理EnableFeignClients 加入配置
+		// 处理 @EnableFeignClients 加入配置
 		registerDefaultConfiguration(metadata, registry);
-		// 处理FeignClient
+		// 处理 @FeignClient
 		registerFeignClients(metadata, registry);
 	}
 
@@ -153,7 +153,7 @@ class FeignClientsRegistrar
 		Map<String, Object> defaultAttrs = metadata
 				.getAnnotationAttributes(EnableFeignClients.class.getName(), true);
 
-		// EnableFeignClients的defaultConfiguration属性部位空时
+		// EnableFeignClients的defaultConfiguration属性不为空时
 		if (defaultAttrs != null && defaultAttrs.containsKey("defaultConfiguration")) {
 			String name;
 			if (metadata.hasEnclosingClass()) {
@@ -203,8 +203,10 @@ class FeignClientsRegistrar
 		}
 
 		for (String basePackage : basePackages) {
+			// 用scanner扫描basePackages下的basePackage
 			Set<BeanDefinition> candidateComponents = scanner
 					.findCandidateComponents(basePackage);
+			// 处理所有的@FeignClient
 			for (BeanDefinition candidateComponent : candidateComponents) {
 				if (candidateComponent instanceof AnnotatedBeanDefinition) {
 					// verify annotated class is an interface
@@ -218,6 +220,7 @@ class FeignClientsRegistrar
 									FeignClient.class.getCanonicalName());
 
 					String name = getClientName(attributes);
+					// 注册FeignClient的BeanDefinition
 					registerClientConfiguration(registry, name,
 							attributes.get("configuration"));
 
@@ -231,6 +234,7 @@ class FeignClientsRegistrar
 			AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
 		// 将构建FeignClient的工厂FeignClientFactoryBean设置进去
+		// 调用spring的api，代码创建BeanDefinition，并设置到BeanDefinition池子中
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientFactoryBean.class);
 		validate(attributes);
