@@ -84,6 +84,7 @@ class FeignClientFactoryBean
 		FeignLoggerFactory loggerFactory = get(context, FeignLoggerFactory.class);
 		Logger logger = loggerFactory.create(this.type);
 
+		// 建造者模式。传入构造器的各个构造组件，比如encoder，decoder，contract，logger等。用来构造feignclient
 		// @formatter:off
 		Feign.Builder builder =
 			// 拿到的是FeignClientsConfiguration中配置的HystrixFeign.Builder
@@ -259,10 +260,11 @@ class FeignClientFactoryBean
 	 */
 	// 获取@FeignClient标注的接口的代理对象
 	<T> T getTarget() {
-		// FeignContext是Feign在Spring中的子容器
+		// FeignContext 是 Feign 在 Spring 中的子容器
 		FeignContext context = this.applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
 
+		// url属性在FeignClientsRegistrar中就解析好放入到FeignClientFactoryBean中了
 		// 如果我们在@FeignClient中没有配置url，走这个逻辑
 		if (!StringUtils.hasText(this.url)) {
 			// 将name处理下赋值给url
