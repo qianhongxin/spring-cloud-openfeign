@@ -236,7 +236,7 @@ class FeignClientFactoryBean
 
 	protected <T> T loadBalance(Feign.Builder builder, FeignContext context,
 			HardCodedTarget<T> target) {
-		// 默认拿到的是DefaultFeignLoadBalancedConfiguration中配置的feignClient
+		// 默认拿到的是 DefaultFeignLoadBalancedConfiguration 中配置的feignClient
 		// 和Ribbon有关的
 		Client client = getOptional(context, Client.class);
 
