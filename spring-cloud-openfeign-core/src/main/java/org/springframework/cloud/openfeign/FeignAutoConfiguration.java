@@ -104,6 +104,7 @@ public class FeignAutoConfiguration {
 	// ribbon is not on the class path.
 	// see corresponding configurations in FeignRibbonClientAutoConfiguration
 	// for load balanced ribbon clients.
+	// 启用feign.httpclient.enabled配置，方可使用
 	@Configuration
 	@ConditionalOnClass(ApacheHttpClient.class)
 	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
@@ -170,6 +171,7 @@ public class FeignAutoConfiguration {
 
 	}
 
+	// 启用feign.okhttp.enabled配置，方可使用
 	@Configuration
 	@ConditionalOnClass(OkHttpClient.class)
 	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")

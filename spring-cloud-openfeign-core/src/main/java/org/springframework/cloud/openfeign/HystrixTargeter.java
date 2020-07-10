@@ -29,6 +29,7 @@ import feign.hystrix.SetterFactory;
 @SuppressWarnings("unchecked")
 class HystrixTargeter implements Targeter {
 
+	// 基于HystrixTargeter创建出来的FeignClient动态代理，可以实现熔断、限流、降级
 	@Override
 	public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign,
 			FeignContext context, Target.HardCodedTarget<T> target) {

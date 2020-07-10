@@ -44,6 +44,7 @@ public @interface FeignClient {
 	 * Can be specified as property key, eg: ${propertyKey}.
 	 * @return the name of the service with optional protocol prefix
 	 */
+	// 和name效果一样，指定服务名称
 	@AliasFor("name")
 	String value() default "";
 
@@ -52,6 +53,7 @@ public @interface FeignClient {
 	 * @deprecated use {@link #name() name} instead
 	 * @return the service id with optional protocol prefix
 	 */
+	// 服务id，已经不用了
 	@Deprecated
 	String serviceId() default "";
 
@@ -60,28 +62,33 @@ public @interface FeignClient {
 	 * as a service id.
 	 * @return bean name instead of name if present
 	 */
+	// bean的名称
 	String contextId() default "";
 
 	/**
 	 * @return The service id with optional protocol prefix. Synonym for {@link #value()
 	 * value}.
 	 */
+	// 和value效果一样，指定服务名称
 	@AliasFor("value")
 	String name() default "";
 
 	/**
 	 * @return the <code>@Qualifier</code> value for the feign client.
 	 */
+	// 支持qualifier注入支持
 	String qualifier() default "";
 
 	/**
 	 * @return an absolute URL or resolvable hostname (the protocol is optional).
 	 */
+	// 指定服务的url地址，设置了这个值，默认的基于ribbon的负载均衡就不会生效了
 	String url() default "";
 
 	/**
 	 * @return whether 404s should be decoded instead of throwing FeignExceptions
 	 */
+	// 404时指定的404
 	boolean decode404() default false;
 
 	/**
@@ -92,6 +99,7 @@ public @interface FeignClient {
 	 * @see FeignClientsConfiguration for the defaults
 	 * @return list of configurations for feign client
 	 */
+	// 指定根据configuration配置feign的client
 	Class<?>[] configuration() default {};
 
 	/**
@@ -99,6 +107,7 @@ public @interface FeignClient {
 	 * implement the interface annotated by this annotation and be a valid spring bean.
 	 * @return fallback class for the specified Feign client interface
 	 */
+	// 配置降级类，用于Hystrix降级
 	Class<?> fallback() default void.class;
 
 	/**
@@ -109,17 +118,20 @@ public @interface FeignClient {
 	 * @see feign.hystrix.FallbackFactory for details.
 	 * @return fallback factory for the specified Feign client interface
 	 */
+	// 配置降级工厂类
 	Class<?> fallbackFactory() default void.class;
 
 	/**
 	 * @return path prefix to be used by all method-level mappings. Can be used with or
 	 * without <code>@RibbonClient</code>.
 	 */
+	// 指定根路径，当前feignClient的所有请求都会带上，比如/koala-inventory
 	String path() default "";
 
 	/**
 	 * @return whether to mark the feign proxy as a primary bean. Defaults to true.
 	 */
+	// 设置为默认的FeignClient
 	boolean primary() default true;
 
 }

@@ -33,6 +33,7 @@ import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
  * @author Dave Syer
  *
  */
+// spring cloud feign默认使用的FeignClient
 public class LoadBalancerFeignClient implements Client {
 
 	static final Request.Options DEFAULT_OPTIONS = new Request.Options();

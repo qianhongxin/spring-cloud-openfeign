@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Spencer Gibb
  */
+// 基于httpclient的负载均衡的feignClient
 @Configuration
 @ConditionalOnClass(ApacheHttpClient.class)
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)

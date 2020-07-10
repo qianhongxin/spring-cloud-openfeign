@@ -47,6 +47,7 @@ public @interface EnableFeignClients {
 	 * {@code @ComponentScan(basePackages="org.my.pkg")}.
 	 * @return the array of 'basePackages'.
 	 */
+	// 和basePackages一样，都是配置包名，扫描包下的类
 	String[] value() default {};
 
 	/**
@@ -58,6 +59,7 @@ public @interface EnableFeignClients {
 	 * package names.
 	 * @return the array of 'basePackages'.
 	 */
+	// 配置包名，扫描包下的类
 	String[] basePackages() default {};
 
 	/**
@@ -68,6 +70,7 @@ public @interface EnableFeignClients {
 	 * serves no purpose other than being referenced by this attribute.
 	 * @return the array of 'basePackageClasses'.
 	 */
+	// 配置指定的class，后面扫描时，会扫描该class对应的包，见FeignClientsRegistrar的368行
 	Class<?>[] basePackageClasses() default {};
 
 	/**
@@ -78,6 +81,7 @@ public @interface EnableFeignClients {
 	 * @see FeignClientsConfiguration for the defaults
 	 * @return list of default configurations
 	 */
+	// 利用configuration做配置
 	Class<?>[] defaultConfiguration() default {};
 
 	/**
@@ -85,6 +89,7 @@ public @interface EnableFeignClients {
 	 * scanning.
 	 * @return list of FeignClient classes
 	 */
+	// 指定配置一些client，但是这些class，还是要配置@FeignClient。即配置了clients就不会用上面的那些属性的配置了
 	Class<?>[] clients() default {};
 
 }

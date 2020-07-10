@@ -139,7 +139,10 @@ class FeignClientsRegistrar
 	}
 
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata metadata,
+	public void registerBeanDefinitions(
+		// metadata 包含了当前系统所有的注解的元数据
+		AnnotationMetadata metadata,
+			// spring 的注册中心
 			BeanDefinitionRegistry registry) {
 		// 处理 @EnableFeignClients 加入配置
 		registerDefaultConfiguration(metadata, registry);
@@ -153,7 +156,7 @@ class FeignClientsRegistrar
 		Map<String, Object> defaultAttrs = metadata
 				.getAnnotationAttributes(EnableFeignClients.class.getName(), true);
 
-		// EnableFeignClients的defaultConfiguration属性不为空时
+		// EnableFeignClients的defaultConfiguration属性不为空时则执行if逻辑
 		if (defaultAttrs != null && defaultAttrs.containsKey("defaultConfiguration")) {
 			String name;
 			if (metadata.hasEnclosingClass()) {
@@ -174,28 +177,30 @@ class FeignClientsRegistrar
 
 		Set<String> basePackages;
 
-		// 获取被 @EnableFeignClients 修饰的类
+		// 获取 @EnableFeignClients 注解中的属性值
 		Map<String, Object> attrs = metadata
 				.getAnnotationAttributes(EnableFeignClients.class.getName());
 		// 过滤出 @FeignClient 的过滤器
 		AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(
 				FeignClient.class);
-		// 获取被 @FeignClient 注解的类
+		// 获取 @EnableFeignClients 注解的clients属性的值
 		final Class<?>[] clients = attrs == null ? null
 				: (Class<?>[]) attrs.get("clients");
-		// 如果EnableFeignClients的clients是空，则从其他属性获取。否则就用这个
+		// 如果EnableFeignClients的clients是空，则从其他属性获取。否则就用这个（一般都是空，因为我们都是用@FeignClient指定）
 		if (clients == null || clients.length == 0) {
 			// 将过滤器加入scanner
 			scanner.addIncludeFilter(annotationTypeFilter);
-			// 获取 metadata 中的 basePackages
+			// 获取 @EnableFeignClients 中配置的包路径
 			basePackages = getBasePackages(metadata);
 		}
+		// 一下逻辑基本不会走，因为我们一般不会指定@EnableFeignClients的clients值
 		else {
 			// 保存client的类名
 			final Set<String> clientClasses = new HashSet<>();
 			// 保存client的包名
 			basePackages = new HashSet<>();
 			for (Class<?> clazz : clients) {
+				// 将 clazz 所在的包名设置到basePackages中
 				basePackages.add(ClassUtils.getPackageName(clazz));
 				clientClasses.add(clazz.getCanonicalName());
 			}
@@ -216,27 +221,35 @@ class FeignClientsRegistrar
 			// 用 scanner 扫描 basePackages 下的 basePackage。通过scanner中的过滤器过滤出basePackage包下的类对应的需要的beanDefiniation，即@FeignClient对应类
 			Set<BeanDefinition> candidateComponents = scanner
 					.findCandidateComponents(basePackage);
-			// 处理所有的 @FeignClient
+			// 处理所有的 @FeignClient 注解的类
 			for (BeanDefinition candidateComponent : candidateComponents) {
 				if (candidateComponent instanceof AnnotatedBeanDefinition) {
 					// verify annotated class is an interface
+					// 因为Feign的client都是要被@FeignClient注解才生效的，所以所有的client都是 AnnotatedBeanDefinition 类型
 					AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
+					// 获取Feign的client的元数据的信息
 					AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
 					Assert.isTrue(annotationMetadata.isInterface(),
 							"@FeignClient can only be specified on an interface");
 
-					// 获取candidateComponent上的@FeignClient中的属性值
+					// 从元数据中，获取candidateComponent上的@FeignClient中的属性值
 					Map<String, Object> attributes = annotationMetadata
 							.getAnnotationAttributes(
 									FeignClient.class.getCanonicalName());
 
 					// 获取FeignClient的名称的逻辑，依次从contenxtId，value，name，serviceId等属性中获取
 					String name = getClientName(attributes);
-					// 注册FeignClient的BeanDefinition，根据获取到的name，和@FeignClient中的configuration将client配置注入到spirng的容器中registry
-					registerClientConfiguration(registry, name,
-							attributes.get("configuration"));
 
-					// 将FeignClient定义注入到spring容器中
+					// 将FeignClient的configuration的类中的配置的bean，放入BeanDefinitionRegistry中
+					registerClientConfiguration(
+						// beandefiniation的注册中心
+						registry,
+						// client的名称
+						name,
+						// 获取@FeignClient的configuration的值
+						attributes.get("configuration"));
+
+					// 将FeignClient定义注入到spring容器的BeanDefinitionRegistry中
 					registerFeignClient(registry, annotationMetadata, attributes);
 				}
 			}
@@ -408,8 +421,11 @@ class FeignClientsRegistrar
 			Object configuration) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientSpecification.class);
+		// 标识
 		builder.addConstructorArgValue(name);
 		builder.addConstructorArgValue(configuration);
+		// 将@FeignClient的configuration或@EnableFeignClients的defaultConfiguration
+		// 指定的类中的配置的bean（比如Encoder，Decoder，Logger等），放入BeanDefinitionRegistry中
 		registry.registerBeanDefinition(
 				name + "." + FeignClientSpecification.class.getSimpleName(),
 				builder.getBeanDefinition());

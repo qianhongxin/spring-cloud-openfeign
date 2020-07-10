@@ -37,6 +37,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Spencer Gibb
  */
+// 基于okhttpclient的负载均衡的feignClient
+
 @Configuration
 @ConditionalOnClass(OkHttpClient.class)
 @ConditionalOnProperty("feign.okhttp.enabled")

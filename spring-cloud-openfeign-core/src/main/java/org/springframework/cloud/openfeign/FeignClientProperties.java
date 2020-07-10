@@ -34,6 +34,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * @author Eko Kurniawan Khannedy
  */
+// 可以在resource下的application配置文件中配置feign.client.xxx的配置
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
 

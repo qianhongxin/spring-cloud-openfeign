@@ -96,6 +96,7 @@ class FeignClientFactoryBean
 				.contract(get(context, Contract.class));
 		// @formatter:on
 
+		// 读取配置文件，配置feign
 		configureFeign(context, builder);
 
 		return builder;
@@ -228,6 +229,7 @@ class FeignClientFactoryBean
 		return instance;
 	}
 
+	// 默认返回的是基于ribbon的负载均衡的client，在DefaultFeignLoadBalancedConfiguration中
 	protected <T> T getOptional(FeignContext context, Class<T> type) {
 		return context.getInstance(this.contextId, type);
 	}
@@ -239,8 +241,11 @@ class FeignClientFactoryBean
 		Client client = getOptional(context, Client.class);
 
 		if (client != null) {
+			// 设置client到builder中
 			builder.client(client);
+			// 获取配置的target，即默认的是DefaultTargeter
 			Targeter targeter = get(context, Targeter.class);
+			// targeter利用builder和target创建出来FeignClient的动态代理
 			return targeter.target(this, builder, context, target);
 		}
 
@@ -248,6 +253,17 @@ class FeignClientFactoryBean
 				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-netflix-ribbon?");
 	}
 
+	// FeignClientsRegistrar 中扫描包下面的@FeignClient的注解，以及搞完了，扫描到内存里来了，形成了BeanDefinition
+	//下面一步，其实就是在spring容器初始化的时候，一定是会根据扫描出来的@FeignClient的信息，去构造一个原生的feign的FeignClient出来，然后基于这个FeignClient来构造一个ServiceAClient接口的动态代理
+	//也就是说ServiceAClient接口调用的时候，一定是会走这个动态代理的
+	//FeignClientFactoryBean里面去，我们其实在这里找到了相关的一些构造FeignClient的过程
+	//FeignClientFactoryBean包含了@FeignClient注解中的所有的属性的值，所以肯定是根据你定义的@FeignClient注解的属性，来进行FeignClient的生成
+
+	//这个getObject()方法，就是在spring容器初始化的时候，被作为入口来调用，然后在这个里面，创建了一个ServiceAClient的动态代理，然后返回给spring容器，注册到Spring容器里去。。。。。
+	//然后。。。@FeignCilent标注的ServiceAClient接口，就有动态代理实现的bean了
+	//然后。。。这个动态代理bean就可以注入的ServiceBController里面去了。。。。
+
+	// 由spring调用，创建 FeignClient 实例（即动态代理对象），一般在spring中都是单例模式创建使用，因为创建过程耗时
 	@Override
 	public Object getObject() throws Exception {
 		return getTarget();
@@ -260,42 +276,51 @@ class FeignClientFactoryBean
 	 */
 	// 获取@FeignClient标注的接口的代理对象
 	<T> T getTarget() {
-		// FeignContext 是 Feign 在 Spring 中的子容器
+		// FeignContext 是 Feign 在 Spring 中的子容器，获取context对象在FeignAutoConfiguration中
 		FeignContext context = this.applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
 
 		// url属性在FeignClientsRegistrar中就解析好放入到FeignClientFactoryBean中了
-		// 如果我们在@FeignClient中没有配置url，走这个逻辑
+		// 如果我们在@FeignClient中没有配置url，走这个逻辑，即使用负载均衡
 		if (!StringUtils.hasText(this.url)) {
-			// 将name处理下赋值给url
+			// 将name处理下赋值给url，比如http://serviceA
 			if (!this.name.startsWith("http")) {
 				this.url = "http://" + this.name;
 			}
 			else {
 				this.url = this.name;
 			}
-			// 格式化url
+			// 将@FeignClient注解中的path拼接上，即http://serviceA/koala-inventory
 			this.url += cleanPath();
 
-			// 走负载均衡的动态代理的target
+			// 走负载均衡的动态代理的client
 			return (T) loadBalance(builder, context,
 					new HardCodedTarget<>(this.type, this.name, this.url));
 		}
-		// 给url拼接http://头
+
+
+		// 给url拼接http://头，比如http://serviceA
 		if (StringUtils.hasText(this.url) && !this.url.startsWith("http")) {
 			this.url = "http://" + this.url;
 		}
+		// 将@FeignClient注解中的path拼接上，即http://serviceA/koala-inventory
 		String url = this.url + cleanPath();
+		// 获取配置的Feign client 客户端，比如okHttp的，ApacheHttpClient的等, 在FeignAutoConfiguration中
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			if (client instanceof LoadBalancerFeignClient) {
 				// not load balancing because we have a url,
 				// but ribbon is on the classpath, so unwrap
+				// 走到这里，说明指定了url，不使用负载均衡的client。而默认使用的是基于ribbon的负载均衡的装饰过的client
+				// 所以这里做了去装饰操作，即拿到被装饰的原生的client
 				client = ((LoadBalancerFeignClient) client).getDelegate();
 			}
+			// 设置原生的client到builder中
 			builder.client(client);
 		}
+		// 获取配置的targeter, 在FeignAutoConfiguration中
 		Targeter targeter = get(context, Targeter.class);
+		// 这里创建出来的client没有负载均衡的效果
 		return (T) targeter.target(this, builder, context,
 				new HardCodedTarget<>(this.type, this.name, url));
 	}
