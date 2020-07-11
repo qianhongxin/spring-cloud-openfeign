@@ -241,7 +241,7 @@ class FeignClientFactoryBean
 		Client client = getOptional(context, Client.class);
 
 		if (client != null) {
-			// 设置client到builder中
+			// 设置client到builder中，底层发出请求之前会有负载均衡选择服务器
 			builder.client(client);
 			// 获取配置的target，即默认的是DefaultTargeter
 			Targeter targeter = get(context, Targeter.class);

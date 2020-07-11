@@ -157,6 +157,7 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(Client.class)
+		// 基于httpclient的发起请求的client。不是feignclient，而是发请求用的
 		public Client feignClient(HttpClient httpClient) {
 			return new ApacheHttpClient(httpClient);
 		}
@@ -216,6 +217,7 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(Client.class)
+		// 基于 okhttp3 的发起请求的client。不是feignclient，而是发请求用的
 		public Client feignClient(okhttp3.OkHttpClient client) {
 			return new OkHttpClient(client);
 		}
